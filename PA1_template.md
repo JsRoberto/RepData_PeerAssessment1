@@ -8,7 +8,8 @@ output: html_fragment
 #Reporting the analysis of activity monitoring data  
 ***
 
-```{r setoptions}
+
+```r
 knitr::opts_chunk$set(autodep = TRUE, cache = TRUE, results = "hide")
 ```
 This project consists in analysing an activity monitoring data in order to
@@ -16,7 +17,8 @@ proceed with the following tasks:
 
 ##Loading and pre-processing the data  
 
-```{r}
+
+```r
 #Defining the non default packages needed to run entire code
 library(lattice)
 
@@ -37,8 +39,16 @@ actmd <- actmd[order(actmd$date, actmd$interval), ]
 
 The abreviation _**actmd**_ means from both bold and italic letters of _**act**_ivity _**m**_onitoring _**d**_ata. The data frame _**actmd**_ has the variables _steps_, _interval_ and _date_, as we can see from  
 
-```{r results = "markup"}
+
+```r
 str(actmd)
+```
+
+```
+## 'data.frame':	17568 obs. of  3 variables:
+##  $ steps   : int  NA NA NA NA NA NA NA NA NA NA ...
+##  $ date    : Date, format: "2012-10-01" "2012-10-01" ...
+##  $ interval: int  0 5 10 15 20 25 30 35 40 45 ...
 ```
 
 ##What is mean total number of steps taken per day?  
@@ -46,7 +56,8 @@ str(actmd)
 First, the number of _steps_ taken peer day is stored in the variable _**eachDay**_. Subsequently, in each day, a number of calculations gives us sum, mean and median of the _steps_ grouped. It is possible to see the sum calculations above in a pleasant way by a histogram plot.  
 
 
-```{r histogram, fig.height = 4}
+
+```r
 #Separating and grouping $steps by $date
 #Calculating using sapply() function: sum, mean and median of each group above
 #Plotting the histogram of the total (sum) of each group above
@@ -59,12 +70,15 @@ hist(total, col = "green", main = "Total Steps in each Day", ylim = c(0, 10),
 rug(total)
 ```
 
+![plot of chunk histogram](figure/histogram-1.png)
+
 ##What is the average daily activity pattern?  
 
 By now, the steps are grouped by each 5-minute interval, considering all days.
 The _**eachInterval**_ organize this data. Besides, a time series plot shows the mean of these groups -- the _**average2**_ vareable -- over each interval.  
 
-```{r timeSplot, fig.height = 4}
+
+```r
 #Separating and grouping $steps by $interval
 #Calculating using sapply function: mean of each group above
 #Ploting the time series of the average (mean) of each group above
@@ -76,12 +90,15 @@ title(main = "Mean of Steps in each 5-minute Interval", ylab = "Average",
       xlab = "Interval (5-minute)")
 ```
 
-```{r}
+![plot of chunk timeSplot](figure/timeSplot-1.png)
+
+
+```r
 #The 5-minute interval in which the average (defined above) is maximum
 maxAverage <- max(average2)
 maxInterval <- unique(actmd$interval)[maxAverage == average2]
 ```
-Also, we got the maximum average value `r paste("_**maxAverage**_ = ", maxAverage, sep = "")` and the repective 5-minute interval `r paste("_**maxInterval**_ = ", maxInterval, sep = "")`, corresponding to interval `r paste(floor(maxInterval/60),"h",maxInterval-60*floor(maxInterval/60)-5,"-",maxInterval-60*floor(maxInterval/60),"min", sep = "")`.  
+Also, we got the maximum average value _**maxAverage**_ = 206.169811320755 and the repective 5-minute interval _**maxInterval**_ = 835, corresponding to interval 13h50-55min.  
 
 ***
 
@@ -89,21 +106,34 @@ Also, we got the maximum average value `r paste("_**maxAverage**_ = ", maxAverag
 
 As we saw previously using _**str(actmd)**_, there are a number of NAs values in _**actmd$steps**_. Precisely, we have  
 
-```{r results = "markup"}
+
+```r
 with(actmd, table(validySteps = !is.na(steps)))
+```
+
+```
+## validySteps
+## FALSE  TRUE 
+##  2304 15264
 ```
 
 Clearly, considering the code above, the logical value _**FALSE**_ counts the NAs
 that belongs to _**actmd$steps**_. In this way, we can confirm this information as follows
 
-```{r results = "markup"}
+
+```r
 numNA <- dim(actmd[!complete.cases(actmd), ])[1]
 numNA
 ```
 
+```
+## [1] 2304
+```
+
 Now, our strategy to overcome this problem with missing values is filling in all of the NAs by the mean for each 5-minute interval, in all days. The new dataset _**actmdnoNA**_ was obtained after this filling in operation.  
 
-```{r}
+
+```r
 #Filling in the NAs with the mean for each 5-minute interval within actmdnoNA
 #Como otimizar? utilizando _apply() functions?
 actmdnoNA <- actmd
@@ -117,7 +147,8 @@ for(i in 1:length(actmd$steps)){
 
 The operations within this new dataset will be represented by the sufix _noNA_ added to the original variable names. Another time, the number of _steps_ taken peer day is stored. And again, the sum, mean and median of the _steps_ grouped are calculated.
 
-```{r histogram2, fig.height = 4}
+
+```r
 #Separating and grouping $steps by $date of "actmdnoNA" (actmd with NAs filled 
 #------in by the mean for each 5-minute interval)
 #Calculating using sapply() function: sum, mean and median of each group above
@@ -131,6 +162,8 @@ hist(totalnoNA, col = "green", main = "Total Steps in each Day (without NAs)",
 rug(totalnoNA)
 ```
 
+![plot of chunk histogram2](figure/histogram2-1.png)
+
 The comparisson between the two histogram plots shows that the filling in operation made the median terms became more frequent -- median terms of the data as the histogram organizes.
 
 ##Are there differences in activity patterns between weekdays and weekends?
@@ -138,7 +171,8 @@ The comparisson between the two histogram plots shows that the filling in operat
 Here, we must to solve the problem of creating a new factor variable, which indicates whether the current day is in _weekday_ or in _weekend_.  
 This task presents some complications, the main is that we have to sort the initial dates to ensure that the first one is a known day (as **monday**, for instance). In this way, we easily identify the days on weekends.  
 
-```{r}
+
+```r
 #Sorting appropriately days in the week (monday as first day, tuesday as second 
 #------day and so on)
 #Creating the new factor variable "week" with levels "weekday" and "weekend"
@@ -167,7 +201,8 @@ actmdnoNA$week <- factor(actmdnoNA$week)
 
 After, in order to make panel plot using the _**lattice**_ package, we must to create a new data frame _**newdata**_. The graph contains a time series plot of the 5-minute _interval_ (x-axis) and the average number of _steps_ taken, averaged across all weekday days or weekend days (y-axis).  
 
-```{r timeSplot2, fig.height = 7}
+
+```r
 data1 <- subset(actmdnoNA, week == "weekday")
 data2 <- subset(actmdnoNA, week == "weekend")
 #Com certeza há uma função _apply() para fazer isso!
@@ -185,3 +220,5 @@ newdata <- rbind(data1, data2)
 
 xyplot(avr ~ interval | week, data = newdata, type = "l", layout = c(1,2))
 ```
+
+![plot of chunk timeSplot2](figure/timeSplot2-1.png)
